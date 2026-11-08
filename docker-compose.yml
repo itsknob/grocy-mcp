@@ -1,0 +1,66 @@
+# Docker Compose configuration for grocy-mcp
+#
+# Choose the transport mode by setting the TRANSPORT environment variable:
+# - stdio: For MCP clients (Claude Desktop, etc.) - default
+# - streamable-http: For direct API access
+#
+# Make sure to replace the GROCY_URL and GROCY_API_KEY with your actual values
+version: '3.8'
+
+services:
+  grocy-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: grocy-mcp
+    restart: unless-stopped
+    
+    # Environment variables - REQUIRED
+    # Replace these with your actual Grocy instance credentials
+    environment:
+      - GROCY_URL=https://your-grocy-instance.com
+      - GROCY_API_KEY=your-api-key-here
+      
+    # Choose your transport mode
+    command: ["grocy-mcp"]  # stdio mode (default for MCP clients)
+    
+    # Ports
+    # - Port 8000: For streamable-http transport (exposed only if TRANSPORT=streamable-http)
+    # - Port 60999: For stdio transport (used by MCP clients)
+    ports:
+      - "${MCP_PORT:-60999}:60999"
+      - "${HTTP_PORT:-8000}:8000"
+    
+    # Network access to your Grocy instance
+    # Make sure your Grocy instance is accessible from this network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    
+    # Optional: Add custom environment variables
+    environment:
+      - TRANSPORT=${TRANSPORT:-stdio}
+      - PORT=${HTTP_PORT:-8000}
+    
+    # Optional: Volume for config file (Linux/macOS default paths)
+    volumes:
+      - ~/.config/grocy-mcp:/app/config:ro
+      - /tmp/grocy-mcp-paths:/app/configs:rw
+    
+    # Optional: Health check
+    healthcheck:
+      test: ["CMD", "echo", "system info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Grocy instance (uncomment if you need Grocy running in this stack)
+  # grocy:
+  #   image: grocy/grocy:v4.4.1+
+  #   ports:
+  #     - "18080:80"
+  #   volumes:
+  #     - ./grocy-data:/var/www/html/vendor/grocy/data
+  #   restart: unless-stopped
+
+# Network mode: bridge or host
+network_mode: bridge

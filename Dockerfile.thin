@@ -1,0 +1,37 @@
+# Thin Dockerfile for grocy-mcp
+# Smaller image size, installs from PyPI
+#
+# Usage:
+#   docker build -f Dockerfile.thin -t grocy-mcp:thin .
+#   docker run -e GROCY_URL=... -e GROCY_API_KEY=... grocy-mcp:thin
+#
+# Note: Only supports stdio transport mode
+
+FROM python:3.11-slim
+
+# Environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Create a non-root user for security
+RUN groupadd -r grocy && useradd -r -g grocy grocy
+
+# Set working directory
+WORKDIR /app
+
+# Install the package from PyPI
+RUN pip install --no-cache-dir grocy-mcp
+
+# Change to non-root user
+USER grocy
+
+# Expose port for MCP stdio transport
+EXPOSE 60999
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD grocy-mcp grocy system info || exit 1
+
+# Default command (stdio mode only for thin image)
+CMD ["grocy-mcp"]

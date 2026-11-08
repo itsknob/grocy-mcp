@@ -1,0 +1,45 @@
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.docker/
+.dockerignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+*.egg
+dist/
+build/
+*.egg-info/
+
+# Testing
+*.md
+tests/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# All files for thin image
+src/

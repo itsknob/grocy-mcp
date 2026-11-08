@@ -1,0 +1,41 @@
+# Docker Compose for grocy-mcp thin image
+# Small, lightweight image for MCP clients
+#
+# NOTE: Only supports stdio transport mode
+#
+# Make sure to replace GROCY_URL and GROCY_API_KEY
+version: '3.8'
+
+services:
+  grocy-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.thin
+    container_name: grocy-mcp
+    restart: unless-stopped
+    
+    # Environment variables - REQUIRED
+    environment:
+      - GROCY_URL=https://your-grocy-instance.com
+      - GROCY_API_KEY=your-api-key-here
+      - TRANSPORT=stdio
+    
+    # Port for MCP stdio transport
+    ports:
+      - "60999:60999"
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "grocy-mcp", "grocy", "system", "info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    # Optional: Add config file path
+    # volumes:
+    #   - ~/.config/grocy-mcp:/app/config:ro
+
+# Build the thin image
+# docker compose -f docker-compose.thin.yml build
+# Run
+# docker compose -f docker-compose.thin.yml up -d
